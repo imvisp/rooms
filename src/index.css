@@ -1,0 +1,244 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background-color: #000000;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #ffffff;
+}
+
+/* ---- Apple iOS Dark Mode Palette ----
+  bg-primary:    #000000
+  bg-secondary:  #1c1c1e
+  bg-tertiary:   #2c2c2e
+  bg-elevated:   #3a3a3c
+  label-primary: #ffffff
+  label-secondary: #8e8e93
+  label-tertiary:  #48484a
+  separator:     #38383a
+  blue:          #0A84FF
+  green:         #30D158
+  red:           #FF453A
+  pink:          #FF375F
+  purple:        #BF5AF2
+---- */
+
+/* ---- Fade in ---- */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out both;
+}
+
+.fade-in-delay-1 { animation-delay: 0.06s; }
+.fade-in-delay-2 { animation-delay: 0.12s; }
+.fade-in-delay-3 { animation-delay: 0.18s; }
+.fade-in-delay-4 { animation-delay: 0.24s; }
+.fade-in-delay-5 { animation-delay: 0.30s; }
+
+/* ---- Apple segmented control ---- */
+
+.segment-control {
+  display: flex;
+  background: #1c1c1e;
+  border-radius: 9px;
+  padding: 2px;
+}
+
+.segment-control button {
+  flex: 1;
+  padding: 7px 0;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #8e8e93;
+  background: transparent;
+  border: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.segment-control button.active {
+  background: #3a3a3c;
+  color: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ---- Apple-style input ---- */
+
+.apple-input {
+  width: 100%;
+  background: #1c1c1e;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 17px;
+  outline: none;
+  transition: background 0.2s ease;
+}
+
+.apple-input::placeholder {
+  color: #48484a;
+}
+
+.apple-input:focus {
+  background: #2c2c2e;
+}
+
+/* ---- Apple primary button ---- */
+
+.apple-btn-primary {
+  width: 100%;
+  background: #0A84FF;
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  padding: 16px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: -0.2px;
+}
+
+.apple-btn-primary:hover {
+  background: #409CFF;
+}
+
+.apple-btn-primary:active {
+  transform: scale(0.98);
+  background: #0070E0;
+}
+
+/* ---- Apple secondary button ---- */
+
+.apple-btn-secondary {
+  width: 100%;
+  background: #1c1c1e;
+  color: #0A84FF;
+  border: none;
+  border-radius: 14px;
+  padding: 16px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.apple-btn-secondary:hover {
+  background: #2c2c2e;
+}
+
+.apple-btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.apple-btn-secondary:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ---- Mic button ---- */
+
+.mic-button {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  outline: none;
+}
+
+.mic-button.idle {
+  background: #1c1c1e;
+}
+
+.mic-button.idle:hover {
+  background: #2c2c2e;
+}
+
+.mic-button.speaking {
+  background: rgba(48, 209, 88, 0.15);
+}
+
+.mic-button:active {
+  transform: scale(0.92);
+}
+
+.mic-button:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+.mic-button:disabled:active {
+  transform: none;
+}
+
+/* ---- Speaking pulse rings (Apple Siri style) ---- */
+
+@keyframes siriPulse {
+  0% { transform: scale(1); opacity: 0.3; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+.siri-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid #30D158;
+  animation: siriPulse 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.siri-ring:nth-child(2) { animation-delay: 0.8s; }
+.siri-ring:nth-child(3) { animation-delay: 1.6s; }
+
+/* ---- Speaking waveform ---- */
+
+@keyframes appleWave1 { 0%,100%{ height:3px; } 50%{ height:12px; } }
+@keyframes appleWave2 { 0%,100%{ height:6px; } 50%{ height:16px; } }
+@keyframes appleWave3 { 0%,100%{ height:4px; } 50%{ height:10px; } }
+
+.apple-wave-1 { animation: appleWave1 0.9s ease-in-out infinite; }
+.apple-wave-2 { animation: appleWave2 0.9s ease-in-out infinite 0.12s; }
+.apple-wave-3 { animation: appleWave3 0.9s ease-in-out infinite 0.24s; }
+
+/* ---- Avatar speaking ---- */
+
+@keyframes avatarGlow {
+  0%,100% { box-shadow: 0 0 0 0 rgba(48,209,88,0.3); }
+  50%     { box-shadow: 0 0 0 6px rgba(48,209,88,0); }
+}
+
+.avatar-glow {
+  animation: avatarGlow 1.8s ease-in-out infinite;
+}
+
+/* ---- Apple separator ---- */
+
+.apple-separator {
+  height: 1px;
+  background: #38383a;
+  border: none;
+}

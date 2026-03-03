@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Rooms - Design Preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+  .tabs { display: flex; position: sticky; top: 0; z-index: 10; background: #0a0a0a; border-bottom: 1px solid #222; }
+  .tab { flex: 1; padding: 14px 8px; text-align: center; cursor: pointer; font-size: 13px; font-weight: 600; color: #888; border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .tab.active { color: #fff; border-bottom-color: #fff; }
+  .tab:hover { color: #ccc; }
+
+  .panels { position: relative; }
+  .panel { display: none; }
+  .panel.active { display: flex; flex-direction: column; align-items: center; gap: 32px; padding: 24px 16px 60px; }
+
+  .phone { width: 360px; height: 720px; border-radius: 40px; overflow: hidden; position: relative; border: 3px solid #333; }
+  .phone-label { font-size: 14px; color: #888; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+  .screen { width: 100%; height: 100%; overflow: auto; }
+
+  /* ===== STYLE 1: GLASSMORPHISM ===== */
+  .glass-bg {
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    min-height: 100%; padding: 48px 24px; display: flex; flex-direction: column; align-items: center;
+  }
+  .glass-bg .logo { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+  .glass-bg .subtitle { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 32px; }
+  .glass-card {
+    width: 100%; border-radius: 20px; padding: 28px 24px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .glass-card label { font-size: 13px; color: rgba(255,255,255,0.6); display: block; margin-bottom: 8px; }
+  .glass-card input {
+    width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06); color: #fff; font-size: 15px; outline: none; margin-bottom: 20px;
+  }
+  .glass-card input:focus { border-color: rgba(255,255,255,0.3); }
+  .glass-card input::placeholder { color: rgba(255,255,255,0.25); }
+  .glass-gender { display: flex; gap: 10px; margin-bottom: 24px; }
+  .glass-gender button {
+    flex: 1; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); font-size: 13px; cursor: pointer;
+  }
+  .glass-gender button.sel { background: rgba(99,102,241,0.3); border-color: rgba(99,102,241,0.5); color: #fff; }
+  .glass-btn {
+    width: 100%; padding: 14px; border-radius: 14px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 10px;
+  }
+  .glass-btn.primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; box-shadow: 0 4px 20px rgba(99,102,241,0.3); }
+  .glass-btn.secondary { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.12); }
+  .glass-divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; width: 100%; }
+  .glass-divider span { font-size: 12px; color: rgba(255,255,255,0.3); }
+  .glass-divider hr { flex: 1; border: none; border-top: 1px solid rgba(255,255,255,0.1); }
+
+  /* Glass Room Screen */
+  .glass-room { min-height: 100%; padding: 20px; display: flex; flex-direction: column; }
+  .glass-room-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .glass-room-code { font-size: 13px; color: rgba(255,255,255,0.5); }
+  .glass-room-code span { color: #fff; font-weight: 600; font-size: 18px; display: block; letter-spacing: 4px; }
+  .glass-leave { padding: 8px 16px; border-radius: 10px; background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); font-size: 13px; cursor: pointer; }
+  .glass-avatars { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; flex: 1; padding: 20px 0; }
+  .glass-avatar { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .glass-avatar-circle {
+    width: 72px; height: 72px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 700; color: #fff;
+    border: 2px solid transparent;
+  }
+  .glass-avatar-circle.speaking { border-color: #22c55e; box-shadow: 0 0 20px rgba(34,197,94,0.3); }
+  .glass-avatar-circle.blue { background: linear-gradient(135deg, #3b82f6, #6366f1); }
+  .glass-avatar-circle.pink { background: linear-gradient(135deg, #ec4899, #f43f5e); }
+  .glass-avatar-circle.purple { background: linear-gradient(135deg, #8b5cf6, #a855f7); }
+  .glass-avatar-name { font-size: 12px; color: rgba(255,255,255,0.7); }
+  .glass-speaking-bars { display: flex; gap: 2px; height: 12px; align-items: flex-end; }
+  .glass-speaking-bars div { width: 3px; background: #22c55e; border-radius: 2px; animation: bar-bounce 0.6s ease-in-out infinite; }
+  .glass-speaking-bars div:nth-child(2) { animation-delay: 0.15s; }
+  .glass-speaking-bars div:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bar-bounce { 0%,100% { height: 4px; } 50% { height: 12px; } }
+
+  .glass-mic-area { text-align: center; padding: 20px 0 32px; }
+  .glass-mic-btn {
+    width: 80px; height: 80px; border-radius: 50%; border: none; cursor: pointer;
+    font-size: 28px; transition: all 0.15s;
+  }
+  .glass-mic-btn.muted { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); border: 2px solid rgba(255,255,255,0.1); }
+  .glass-mic-btn.live { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; box-shadow: 0 0 30px rgba(34,197,94,0.3); }
+  .glass-mic-label { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 10px; }
+
+  /* ===== STYLE 2: NEON ===== */
+  .neon-bg { background: #000; min-height: 100%; padding: 48px 24px; display: flex; flex-direction: column; }
+  .neon-bg .logo { font-size: 28px; font-weight: 700; margin-bottom: 2px; color: #00ffa3; }
+  .neon-bg .subtitle { font-size: 13px; color: #444; margin-bottom: 36px; }
+  .neon-bg label { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 8px; }
+  .neon-input {
+    width: 100%; padding: 14px 16px; border-radius: 8px; border: 1px solid #1a1a1a;
+    background: #0a0a0a; color: #fff; font-size: 15px; outline: none; margin-bottom: 20px; transition: border-color 0.2s;
+  }
+  .neon-input:focus { border-color: #00ffa3; box-shadow: 0 0 12px rgba(0,255,163,0.15); }
+  .neon-input::placeholder { color: #333; }
+  .neon-gender { display: flex; gap: 8px; margin-bottom: 28px; }
+  .neon-gender button {
+    flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #1a1a1a;
+    background: #0a0a0a; color: #555; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .neon-gender button.sel { border-color: #00ffa3; color: #00ffa3; background: rgba(0,255,163,0.05); }
+  .neon-btn {
+    width: 100%; padding: 14px; border-radius: 8px; border: none; font-size: 14px; font-weight: 700; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+  }
+  .neon-btn.primary { background: #00ffa3; color: #000; box-shadow: 0 0 20px rgba(0,255,163,0.2); }
+  .neon-btn.secondary { background: transparent; color: #555; border: 1px solid #1a1a1a; }
+  .neon-divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; }
+  .neon-divider span { font-size: 11px; color: #333; letter-spacing: 2px; }
+  .neon-divider hr { flex: 1; border: none; border-top: 1px solid #111; }
+
+  /* Neon Room */
+  .neon-room { min-height: 100%; padding: 20px; display: flex; flex-direction: column; }
+  .neon-room-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid #111; padding-bottom: 16px; }
+  .neon-room-code { font-size: 12px; color: #333; text-transform: uppercase; letter-spacing: 2px; }
+  .neon-room-code span { color: #00ffa3; font-size: 20px; font-weight: 700; display: block; letter-spacing: 6px; font-family: monospace; }
+  .neon-leave { padding: 8px 16px; border-radius: 6px; background: transparent; color: #ef4444; border: 1px solid #2a1515; font-size: 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+  .neon-avatars { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; flex: 1; padding: 24px 0; }
+  .neon-avatar { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .neon-avatar-circle {
+    width: 68px; height: 68px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700; color: #000;
+    background: #222;
+  }
+  .neon-avatar-circle.speaking { box-shadow: 0 0 20px rgba(0,255,163,0.4); border: 2px solid #00ffa3; }
+  .neon-avatar-circle.c1 { background: #00ffa3; color: #000; }
+  .neon-avatar-circle.c2 { background: #ff6b9d; color: #000; }
+  .neon-avatar-circle.c3 { background: #a78bfa; color: #000; }
+  .neon-avatar-name { font-size: 11px; color: #444; text-transform: uppercase; letter-spacing: 1px; }
+  .neon-mic-area { text-align: center; padding: 20px 0 32px; }
+  .neon-mic-btn {
+    width: 76px; height: 76px; border-radius: 50%; border: 2px solid #1a1a1a; cursor: pointer;
+    font-size: 26px; transition: all 0.15s;
+  }
+  .neon-mic-btn.muted { background: #0a0a0a; color: #333; }
+  .neon-mic-btn.live { background: #00ffa3; color: #000; border-color: #00ffa3; box-shadow: 0 0 30px rgba(0,255,163,0.3); }
+  .neon-mic-label { font-size: 11px; color: #333; margin-top: 10px; text-transform: uppercase; letter-spacing: 2px; }
+
+  /* ===== STYLE 3: SOFT GRADIENT ===== */
+  .soft-bg {
+    background: linear-gradient(160deg, #1a1033, #151030, #0f1528);
+    min-height: 100%; padding: 48px 24px; display: flex; flex-direction: column; align-items: center;
+  }
+  .soft-bg .logo { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+  .soft-bg .subtitle { font-size: 14px; color: rgba(255,255,255,0.4); margin-bottom: 32px; }
+  .soft-card {
+    width: 100%; border-radius: 24px; padding: 28px 24px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  }
+  .soft-card label { font-size: 14px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 8px; }
+  .soft-card input {
+    width: 100%; padding: 14px 18px; border-radius: 14px; border: none;
+    background: rgba(255,255,255,0.07); color: #fff; font-size: 15px; outline: none; margin-bottom: 20px;
+  }
+  .soft-card input::placeholder { color: rgba(255,255,255,0.2); }
+  .soft-card input:focus { background: rgba(255,255,255,0.1); }
+  .soft-gender { display: flex; gap: 10px; margin-bottom: 24px; }
+  .soft-gender button {
+    flex: 1; padding: 12px; border-radius: 14px; border: none;
+    background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); font-size: 13px; cursor: pointer; transition: all 0.2s;
+  }
+  .soft-gender button.sel-m { background: linear-gradient(135deg, rgba(59,130,246,0.3), rgba(99,102,241,0.3)); color: #93c5fd; }
+  .soft-gender button.sel-f { background: linear-gradient(135deg, rgba(236,72,153,0.3), rgba(244,63,94,0.3)); color: #f9a8d4; }
+  .soft-btn {
+    width: 100%; padding: 16px; border-radius: 16px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 10px;
+  }
+  .soft-btn.primary { background: linear-gradient(135deg, #7c3aed, #6366f1, #3b82f6); color: #fff; box-shadow: 0 8px 24px rgba(99,102,241,0.25); }
+  .soft-btn.secondary { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); }
+  .soft-divider { display: flex; align-items: center; gap: 12px; margin: 14px 0; }
+  .soft-divider span { font-size: 12px; color: rgba(255,255,255,0.2); }
+  .soft-divider hr { flex: 1; border: none; border-top: 1px solid rgba(255,255,255,0.06); }
+
+  /* Soft Room */
+  .soft-room { min-height: 100%; padding: 20px; display: flex; flex-direction: column; }
+  .soft-room-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .soft-room-code { font-size: 13px; color: rgba(255,255,255,0.4); }
+  .soft-room-code span { color: #c4b5fd; font-weight: 700; font-size: 20px; display: block; letter-spacing: 4px; }
+  .soft-leave { padding: 8px 18px; border-radius: 12px; background: rgba(239,68,68,0.1); color: #fca5a5; border: none; font-size: 13px; cursor: pointer; }
+  .soft-avatars { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; flex: 1; padding: 24px 0; }
+  .soft-avatar { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .soft-avatar-circle {
+    width: 74px; height: 74px; border-radius: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 700; color: #fff;
+  }
+  .soft-avatar-circle.speaking { box-shadow: 0 0 24px rgba(134,239,172,0.3); }
+  .soft-avatar-circle.c1 { background: linear-gradient(135deg, #3b82f6, #6366f1); }
+  .soft-avatar-circle.c2 { background: linear-gradient(135deg, #ec4899, #f43f5e); }
+  .soft-avatar-circle.c3 { background: linear-gradient(135deg, #8b5cf6, #a855f7); }
+  .soft-avatar-name { font-size: 12px; color: rgba(255,255,255,0.5); }
+  .soft-mic-area { text-align: center; padding: 20px 0 32px; }
+  .soft-mic-btn {
+    width: 80px; height: 80px; border-radius: 24px; border: none; cursor: pointer;
+    font-size: 28px; transition: all 0.15s;
+  }
+  .soft-mic-btn.muted { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.3); }
+  .soft-mic-btn.live { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; box-shadow: 0 8px 24px rgba(34,197,94,0.25); }
+  .soft-mic-label { font-size: 12px; color: rgba(255,255,255,0.3); margin-top: 10px; }
+
+  /* ===== STYLE 4: NEUMORPHISM ===== */
+  .neu-bg { background: #1a1a2e; min-height: 100%; padding: 48px 24px; display: flex; flex-direction: column; align-items: center; }
+  .neu-bg .logo { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+  .neu-bg .subtitle { font-size: 13px; color: #4a4a6a; margin-bottom: 32px; }
+  .neu-card {
+    width: 100%; border-radius: 24px; padding: 28px 24px;
+    background: #1a1a2e;
+    box-shadow: 8px 8px 20px #0e0e1c, -8px -8px 20px #26263a;
+  }
+  .neu-card label { font-size: 13px; color: #5a5a7a; display: block; margin-bottom: 8px; }
+  .neu-card input {
+    width: 100%; padding: 14px 16px; border-radius: 14px; border: none;
+    background: #1a1a2e; color: #fff; font-size: 15px; outline: none; margin-bottom: 20px;
+    box-shadow: inset 4px 4px 8px #0e0e1c, inset -4px -4px 8px #26263a;
+  }
+  .neu-card input::placeholder { color: #3a3a5a; }
+  .neu-gender { display: flex; gap: 12px; margin-bottom: 24px; }
+  .neu-gender button {
+    flex: 1; padding: 12px; border-radius: 14px; border: none;
+    background: #1a1a2e; color: #5a5a7a; font-size: 13px; cursor: pointer;
+    box-shadow: 4px 4px 10px #0e0e1c, -4px -4px 10px #26263a; transition: all 0.2s;
+  }
+  .neu-gender button.sel {
+    color: #818cf8;
+    box-shadow: inset 4px 4px 8px #0e0e1c, inset -4px -4px 8px #26263a;
+  }
+  .neu-btn {
+    width: 100%; padding: 14px; border-radius: 16px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 12px;
+  }
+  .neu-btn.primary {
+    background: #1a1a2e; color: #818cf8;
+    box-shadow: 4px 4px 10px #0e0e1c, -4px -4px 10px #26263a;
+  }
+  .neu-btn.secondary {
+    background: #1a1a2e; color: #5a5a7a;
+    box-shadow: 4px 4px 10px #0e0e1c, -4px -4px 10px #26263a;
+  }
+  .neu-divider { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
+  .neu-divider span { font-size: 12px; color: #3a3a5a; }
+  .neu-divider hr { flex: 1; border: none; border-top: 1px solid #22223a; }
+
+  /* Neu Room */
+  .neu-room { min-height: 100%; padding: 20px; display: flex; flex-direction: column; }
+  .neu-room-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .neu-room-code { font-size: 13px; color: #4a4a6a; }
+  .neu-room-code span { color: #818cf8; font-weight: 700; font-size: 20px; display: block; letter-spacing: 4px; }
+  .neu-leave {
+    padding: 8px 16px; border-radius: 12px; background: #1a1a2e; color: #f87171; border: none; font-size: 13px; cursor: pointer;
+    box-shadow: 3px 3px 8px #0e0e1c, -3px -3px 8px #26263a;
+  }
+  .neu-avatars { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; flex: 1; padding: 24px 0; }
+  .neu-avatar { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .neu-avatar-circle {
+    width: 72px; height: 72px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700; color: #fff;
+    box-shadow: 4px 4px 10px #0e0e1c, -4px -4px 10px #26263a;
+  }
+  .neu-avatar-circle.speaking { box-shadow: 0 0 20px rgba(129,140,248,0.3), 4px 4px 10px #0e0e1c, -4px -4px 10px #26263a; }
+  .neu-avatar-circle.c1 { background: linear-gradient(135deg, #3b82f6, #6366f1); }
+  .neu-avatar-circle.c2 { background: linear-gradient(135deg, #ec4899, #f43f5e); }
+  .neu-avatar-circle.c3 { background: linear-gradient(135deg, #8b5cf6, #a855f7); }
+  .neu-avatar-name { font-size: 12px; color: #5a5a7a; }
+  .neu-mic-area { text-align: center; padding: 20px 0 32px; }
+  .neu-mic-btn {
+    width: 80px; height: 80px; border-radius: 50%; border: none; cursor: pointer;
+    font-size: 28px; transition: all 0.15s;
+  }
+  .neu-mic-btn.muted {
+    background: #1a1a2e; color: #4a4a6a;
+    box-shadow: 6px 6px 14px #0e0e1c, -6px -6px 14px #26263a;
+  }
+  .neu-mic-btn.live {
+    background: #1a1a2e; color: #22c55e;
+    box-shadow: inset 4px 4px 10px #0e0e1c, inset -4px -4px 10px #26263a, 0 0 20px rgba(34,197,94,0.2);
+  }
+  .neu-mic-label { font-size: 12px; color: #4a4a6a; margin-top: 10px; }
+
+  /* ===== STYLE 5: APPLE ===== */
+  .apple-bg {
+    background: #000; min-height: 100%; padding: 52px 24px; display: flex; flex-direction: column; align-items: center;
+    font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+  }
+  .apple-bg .logo { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .apple-bg .subtitle { font-size: 15px; color: #86868b; margin-bottom: 40px; font-weight: 400; }
+  .apple-card { width: 100%; }
+  .apple-card label { font-size: 13px; color: #86868b; display: block; margin-bottom: 6px; font-weight: 500; }
+  .apple-input {
+    width: 100%; padding: 14px 16px; border-radius: 12px; border: none;
+    background: #1c1c1e; color: #fff; font-size: 17px; outline: none; margin-bottom: 20px;
+    font-family: inherit; font-weight: 400;
+  }
+  .apple-input::placeholder { color: #48484a; }
+  .apple-input:focus { box-shadow: 0 0 0 3px rgba(10,132,255,0.3); }
+  .apple-gender { display: flex; gap: 0; margin-bottom: 28px; border-radius: 10px; overflow: hidden; background: #1c1c1e; padding: 2px; }
+  .apple-gender button {
+    flex: 1; padding: 10px; border: none; border-radius: 8px;
+    background: transparent; color: #86868b; font-size: 14px; font-weight: 500; cursor: pointer;
+    font-family: inherit; transition: all 0.2s;
+  }
+  .apple-gender button.sel { background: #2c2c2e; color: #fff; }
+  .apple-btn {
+    width: 100%; padding: 16px; border-radius: 14px; border: none; font-size: 17px; font-weight: 600; cursor: pointer; margin-bottom: 10px;
+    font-family: inherit; transition: all 0.15s;
+  }
+  .apple-btn:active { transform: scale(0.98); }
+  .apple-btn.primary { background: #0a84ff; color: #fff; }
+  .apple-btn.secondary { background: #1c1c1e; color: #0a84ff; }
+  .apple-divider { display: flex; align-items: center; gap: 16px; margin: 18px 0; width: 100%; }
+  .apple-divider span { font-size: 13px; color: #48484a; font-weight: 500; }
+  .apple-divider hr { flex: 1; border: none; border-top: 0.5px solid #38383a; }
+
+  /* Apple Room */
+  .apple-room { min-height: 100%; padding: 16px 20px; display: flex; flex-direction: column; font-family: -apple-system, 'SF Pro Display', sans-serif; }
+  .apple-room-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 0 20px; }
+  .apple-room-back { font-size: 17px; color: #0a84ff; background: none; border: none; cursor: pointer; font-family: inherit; font-weight: 400; display: flex; align-items: center; gap: 4px; }
+  .apple-room-title { font-size: 17px; font-weight: 600; }
+  .apple-room-menu-wrapper { position: relative; }
+  .apple-room-menu-btn {
+    width: 32px; height: 32px; border-radius: 50%; background: #1c1c1e; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 16px; color: #86868b;
+  }
+  .apple-room-dropdown {
+    display: none; position: absolute; top: 40px; right: 0; width: 180px;
+    background: #2c2c2e; border-radius: 14px; overflow: hidden; z-index: 20;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .apple-room-dropdown.open { display: block; }
+  .apple-room-dropdown button {
+    width: 100%; padding: 14px 18px; background: none; border: none; border-bottom: 0.5px solid #3a3a3c;
+    color: #fff; font-size: 15px; font-family: inherit; font-weight: 400; text-align: left; cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .apple-room-dropdown button:last-child { border-bottom: none; }
+  .apple-room-dropdown button:active { background: #3a3a3c; }
+  .apple-room-dropdown button.danger-text { color: #ff453a; }
+  .apple-room-dropdown .drop-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .apple-room-info { text-align: center; padding: 8px 0 4px; }
+  .apple-room-code { font-size: 34px; font-weight: 700; letter-spacing: 8px; color: #fff; }
+  .apple-room-count { font-size: 13px; color: #86868b; margin-top: 4px; }
+  .apple-avatars { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; flex: 1; padding: 32px 0; }
+  .apple-avatar { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .apple-avatar-circle {
+    width: 72px; height: 72px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 600; color: #fff;
+    position: relative;
+  }
+  .apple-avatar-circle.speaking { box-shadow: 0 0 0 3px #30d158; }
+  .apple-avatar-circle.c1 { background: #0a84ff; }
+  .apple-avatar-circle.c2 { background: #ff375f; }
+  .apple-avatar-circle.c3 { background: #bf5af2; }
+  .apple-avatar-name { font-size: 13px; color: #86868b; font-weight: 500; }
+  .apple-speaking-dot { width: 8px; height: 8px; border-radius: 50%; background: #30d158; animation: apple-pulse 1.2s ease-in-out infinite; }
+  @keyframes apple-pulse { 0%,100% { opacity: 0.4; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
+
+  /* Apple mic — centered at bottom */
+  .apple-mic-area { text-align: center; padding: 8px 0 36px; }
+  .apple-mic-btn {
+    width: 80px; height: 80px; border-radius: 50%; border: none; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background 0.35s ease, box-shadow 0.35s ease, transform 0.15s ease;
+    font-family: inherit; position: relative; overflow: hidden;
+  }
+  .apple-mic-btn:active { transform: scale(0.88); }
+  .apple-mic-btn.muted { background: #1c1c1e; box-shadow: none; }
+  .apple-mic-btn.live { background: #30d158; box-shadow: 0 0 28px rgba(48,209,88,0.35), 0 0 60px rgba(48,209,88,0.12); }
+  .apple-mic-btn svg { width: 32px; height: 32px; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease; }
+  .apple-mic-btn.muted svg { color: #636366; transform: scale(1); }
+  .apple-mic-btn.live svg { color: #fff; transform: scale(1.1); }
+  /* Ripple ring on toggle */
+  .apple-mic-ring {
+    position: absolute; inset: -6px; border-radius: 50%; border: 2px solid #30d158;
+    opacity: 0; transform: scale(0.8);
+    animation: apple-mic-ring-anim 0.6s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes apple-mic-ring-anim {
+    0% { opacity: 0.7; transform: scale(0.9); }
+    100% { opacity: 0; transform: scale(1.5); }
+  }
+  .apple-mic-label { font-size: 13px; color: #48484a; margin-top: 12px; font-weight: 500; transition: color 0.3s ease; }
+  .apple-mic-label.on { color: #30d158; }
+
+  /* Page toggle */
+  .page-toggle { display: flex; gap: 6px; margin-bottom: 16px; }
+  .page-toggle button { padding: 6px 14px; border-radius: 8px; border: 1px solid #333; background: transparent; color: #666; font-size: 12px; cursor: pointer; }
+  .page-toggle button.active { background: #fff; color: #000; border-color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <div class="tab active" onclick="showPanel(0)">Glass</div>
+  <div class="tab" onclick="showPanel(1)">Neon</div>
+  <div class="tab" onclick="showPanel(2)">Gradient</div>
+  <div class="tab" onclick="showPanel(3)">Neu</div>
+  <div class="tab" onclick="showPanel(4)">Apple</div>
+</div>
+
+<div class="panels">
+
+  <!-- ========== GLASSMORPHISM ========== -->
+  <div class="panel active" id="p0">
+    <div class="page-toggle">
+      <button class="active" onclick="togglePage(0,'home',this)">Home</button>
+      <button onclick="togglePage(0,'room',this)">Room</button>
+    </div>
+    <div class="phone-label">Glassmorphism Dark</div>
+    <div class="phone">
+      <div class="screen" id="p0-home">
+        <div class="glass-bg">
+          <div class="logo">Rooms</div>
+          <div class="subtitle">Talk with anyone, anywhere</div>
+          <div class="glass-card">
+            <label>Your Name</label>
+            <input placeholder="Enter your name..." value="Vishal"/>
+            <label>Gender</label>
+            <div class="glass-gender">
+              <button class="sel">Male</button>
+              <button>Female</button>
+              <button>Other</button>
+            </div>
+            <button class="glass-btn primary">Create Room</button>
+            <div class="glass-divider"><hr/><span>OR</span><hr/></div>
+            <label>Room Code</label>
+            <input placeholder="Enter 4-digit code..." value="X9K2"/>
+            <button class="glass-btn secondary">Join Room</button>
+          </div>
+        </div>
+      </div>
+      <div class="screen" id="p0-room" style="display:none">
+        <div class="glass-bg glass-room">
+          <div class="glass-room-header">
+            <div class="glass-room-code">Room<span>X9K2</span></div>
+            <button class="glass-leave">Leave</button>
+          </div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.3);text-align:center">3 participants</div>
+          <div class="glass-avatars">
+            <div class="glass-avatar">
+              <div class="glass-avatar-circle blue speaking">V</div>
+              <div class="glass-speaking-bars"><div></div><div></div><div></div></div>
+              <div class="glass-avatar-name">Vishal</div>
+            </div>
+            <div class="glass-avatar">
+              <div class="glass-avatar-circle pink">S</div>
+              <div style="height:12px"></div>
+              <div class="glass-avatar-name">Sara</div>
+            </div>
+            <div class="glass-avatar">
+              <div class="glass-avatar-circle purple">A</div>
+              <div style="height:12px"></div>
+              <div class="glass-avatar-name">Alex</div>
+            </div>
+          </div>
+          <div class="glass-mic-area">
+            <button class="glass-mic-btn live">&#x1f3a4;</button>
+            <div class="glass-mic-label">Tap to mute</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== NEON ========== -->
+  <div class="panel" id="p1">
+    <div class="page-toggle">
+      <button class="active" onclick="togglePage(1,'home',this)">Home</button>
+      <button onclick="togglePage(1,'room',this)">Room</button>
+    </div>
+    <div class="phone-label">Minimal Neon</div>
+    <div class="phone" style="border-color:#111">
+      <div class="screen" id="p1-home">
+        <div class="neon-bg">
+          <div class="logo">Rooms</div>
+          <div class="subtitle">Talk with anyone, anywhere</div>
+          <label>NAME</label>
+          <input class="neon-input" placeholder="Enter your name..." value="Vishal"/>
+          <label>GENDER</label>
+          <div class="neon-gender">
+            <button class="sel">Male</button>
+            <button>Female</button>
+            <button>Other</button>
+          </div>
+          <button class="neon-btn primary">CREATE ROOM</button>
+          <div class="neon-divider"><hr/><span>OR</span><hr/></div>
+          <label>ROOM CODE</label>
+          <input class="neon-input" placeholder="Enter code..." value="X9K2"/>
+          <button class="neon-btn secondary">JOIN ROOM</button>
+        </div>
+      </div>
+      <div class="screen" id="p1-room" style="display:none">
+        <div class="neon-bg neon-room">
+          <div class="neon-room-header">
+            <div class="neon-room-code">ROOM<span>X9K2</span></div>
+            <button class="neon-leave">LEAVE</button>
+          </div>
+          <div style="font-size:11px;color:#333;text-align:center;letter-spacing:2px;text-transform:uppercase">3 online</div>
+          <div class="neon-avatars">
+            <div class="neon-avatar">
+              <div class="neon-avatar-circle c1 speaking">V</div>
+              <div class="glass-speaking-bars"><div></div><div></div><div></div></div>
+              <div class="neon-avatar-name">Vishal</div>
+            </div>
+            <div class="neon-avatar">
+              <div class="neon-avatar-circle c2">S</div>
+              <div style="height:12px"></div>
+              <div class="neon-avatar-name">Sara</div>
+            </div>
+            <div class="neon-avatar">
+              <div class="neon-avatar-circle c3">A</div>
+              <div style="height:12px"></div>
+              <div class="neon-avatar-name">Alex</div>
+            </div>
+          </div>
+          <div class="neon-mic-area">
+            <button class="neon-mic-btn live">&#x1f3a4;</button>
+            <div class="neon-mic-label">TAP TO MUTE</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SOFT GRADIENT ========== -->
+  <div class="panel" id="p2">
+    <div class="page-toggle">
+      <button class="active" onclick="togglePage(2,'home',this)">Home</button>
+      <button onclick="togglePage(2,'room',this)">Room</button>
+    </div>
+    <div class="phone-label">Soft Gradient</div>
+    <div class="phone" style="border-color:#221a3a">
+      <div class="screen" id="p2-home">
+        <div class="soft-bg">
+          <div class="logo">Rooms</div>
+          <div class="subtitle">Talk with anyone, anywhere</div>
+          <div class="soft-card">
+            <label>Your Name</label>
+            <input placeholder="Enter your name..." value="Vishal"/>
+            <label>Gender</label>
+            <div class="soft-gender">
+              <button class="sel-m">Male</button>
+              <button>Female</button>
+              <button>Other</button>
+            </div>
+            <button class="soft-btn primary">Create Room</button>
+            <div class="soft-divider"><hr/><span>or</span><hr/></div>
+            <label>Room Code</label>
+            <input placeholder="Enter code..." value="X9K2"/>
+            <button class="soft-btn secondary">Join Room</button>
+          </div>
+        </div>
+      </div>
+      <div class="screen" id="p2-room" style="display:none">
+        <div class="soft-bg soft-room">
+          <div class="soft-room-header">
+            <div class="soft-room-code">Room<span>X9K2</span></div>
+            <button class="soft-leave">Leave</button>
+          </div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.3);text-align:center">3 participants</div>
+          <div class="soft-avatars">
+            <div class="soft-avatar">
+              <div class="soft-avatar-circle c1 speaking">V</div>
+              <div class="glass-speaking-bars"><div></div><div></div><div></div></div>
+              <div class="soft-avatar-name">Vishal</div>
+            </div>
+            <div class="soft-avatar">
+              <div class="soft-avatar-circle c2">S</div>
+              <div style="height:12px"></div>
+              <div class="soft-avatar-name">Sara</div>
+            </div>
+            <div class="soft-avatar">
+              <div class="soft-avatar-circle c3">A</div>
+              <div style="height:12px"></div>
+              <div class="soft-avatar-name">Alex</div>
+            </div>
+          </div>
+          <div class="soft-mic-area">
+            <button class="soft-mic-btn live">&#x1f3a4;</button>
+            <div class="soft-mic-label">Tap to mute</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== NEUMORPHISM ========== -->
+  <div class="panel" id="p3">
+    <div class="page-toggle">
+      <button class="active" onclick="togglePage(3,'home',this)">Home</button>
+      <button onclick="togglePage(3,'room',this)">Room</button>
+    </div>
+    <div class="phone-label">Neumorphism Dark</div>
+    <div class="phone" style="border-color:#22223a">
+      <div class="screen" id="p3-home">
+        <div class="neu-bg">
+          <div class="logo">Rooms</div>
+          <div class="subtitle">Talk with anyone, anywhere</div>
+          <div class="neu-card">
+            <label>Your Name</label>
+            <input placeholder="Enter your name..." value="Vishal"/>
+            <label>Gender</label>
+            <div class="neu-gender">
+              <button class="sel">Male</button>
+              <button>Female</button>
+              <button>Other</button>
+            </div>
+            <button class="neu-btn primary">Create Room</button>
+            <div class="neu-divider"><hr/><span>or</span><hr/></div>
+            <label>Room Code</label>
+            <input placeholder="Enter code..." value="Vishal"/>
+            <button class="neu-btn secondary">Join Room</button>
+          </div>
+        </div>
+      </div>
+      <div class="screen" id="p3-room" style="display:none">
+        <div class="neu-bg neu-room">
+          <div class="neu-room-header">
+            <div class="neu-room-code">Room<span>X9K2</span></div>
+            <button class="neu-leave">Leave</button>
+          </div>
+          <div style="font-size:12px;color:#4a4a6a;text-align:center">3 participants</div>
+          <div class="neu-avatars">
+            <div class="neu-avatar">
+              <div class="neu-avatar-circle c1 speaking">V</div>
+              <div class="glass-speaking-bars"><div style="background:#818cf8"></div><div style="background:#818cf8"></div><div style="background:#818cf8"></div></div>
+              <div class="neu-avatar-name">Vishal</div>
+            </div>
+            <div class="neu-avatar">
+              <div class="neu-avatar-circle c2">S</div>
+              <div style="height:12px"></div>
+              <div class="neu-avatar-name">Sara</div>
+            </div>
+            <div class="neu-avatar">
+              <div class="neu-avatar-circle c3">A</div>
+              <div style="height:12px"></div>
+              <div class="neu-avatar-name">Alex</div>
+            </div>
+          </div>
+          <div class="neu-mic-area">
+            <button class="neu-mic-btn live">&#x1f3a4;</button>
+            <div class="neu-mic-label">Tap to mute</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== APPLE ========== -->
+  <div class="panel" id="p4">
+    <div class="page-toggle">
+      <button class="active" onclick="togglePage(4,'home',this)">Home</button>
+      <button onclick="togglePage(4,'room',this)">Room</button>
+    </div>
+    <div class="phone-label">Apple Style</div>
+    <div class="phone" style="border-color:#222">
+      <div class="screen" id="p4-home">
+        <div class="apple-bg">
+          <div class="logo">Rooms</div>
+          <div class="subtitle">Talk with anyone, anywhere.</div>
+          <div class="apple-card">
+            <label>Your Name</label>
+            <input class="apple-input" placeholder="Name" value="Vishal"/>
+            <label>Gender</label>
+            <div class="apple-gender">
+              <button class="sel">Male</button>
+              <button>Female</button>
+              <button>Other</button>
+            </div>
+            <button class="apple-btn primary">Create Room</button>
+            <div class="apple-divider"><hr/><span>or</span><hr/></div>
+            <label>Room Code</label>
+            <input class="apple-input" placeholder="Enter code" value="X9K2"/>
+            <button class="apple-btn secondary">Join Room</button>
+          </div>
+        </div>
+      </div>
+      <div class="screen" id="p4-room" style="display:none">
+        <div class="apple-bg apple-room" style="padding:0;align-items:stretch">
+          <div class="apple-room-header" style="padding:16px 20px 0">
+            <button class="apple-room-back">&#x276E; Back</button>
+            <div class="apple-room-title">Room</div>
+            <div class="apple-room-menu-wrapper">
+              <button class="apple-room-menu-btn" onclick="toggleAppleMenu(this)">&#x2026;</button>
+              <div class="apple-room-dropdown">
+                <button><span class="drop-icon">&#x1F517;</span> Copy Link</button>
+                <button><span class="drop-icon">&#x1F4E4;</span> Share Room</button>
+                <button class="danger-text"><span class="drop-icon">&#x23FB;</span> Leave Room</button>
+              </div>
+            </div>
+          </div>
+          <div class="apple-room-info">
+            <div class="apple-room-code">X9K2</div>
+            <div class="apple-room-count">3 participants</div>
+          </div>
+          <div class="apple-avatars">
+            <div class="apple-avatar">
+              <div class="apple-avatar-circle c1 speaking">V</div>
+              <div class="apple-speaking-dot"></div>
+              <div class="apple-avatar-name">Vishal</div>
+            </div>
+            <div class="apple-avatar">
+              <div class="apple-avatar-circle c2">S</div>
+              <div style="height:8px"></div>
+              <div class="apple-avatar-name">Sara</div>
+            </div>
+            <div class="apple-avatar">
+              <div class="apple-avatar-circle c3">A</div>
+              <div style="height:8px"></div>
+              <div class="apple-avatar-name">Alex</div>
+            </div>
+          </div>
+          <div class="apple-mic-area">
+            <button class="apple-mic-btn live" id="appleMicBtn" onclick="toggleAppleMic()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="1" width="6" height="11" rx="3"/>
+                <path d="M5 10v1a7 7 0 0 0 14 0v-1"/>
+                <line x1="12" y1="18" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+              </svg>
+            </button>
+            <div class="apple-mic-label on" id="appleMicLabel">Mic</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showPanel(i) {
+  document.querySelectorAll('.panel').forEach((p,idx) => p.classList.toggle('active', idx===i));
+  document.querySelectorAll('.tab').forEach((t,idx) => t.classList.toggle('active', idx===i));
+}
+function togglePage(panel, page, btn) {
+  const home = document.getElementById(`p${panel}-home`);
+  const room = document.getElementById(`p${panel}-room`);
+  if (page === 'home') { home.style.display='block'; room.style.display='none'; }
+  else { home.style.display='none'; room.style.display='block'; }
+  btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
