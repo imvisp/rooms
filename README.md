@@ -154,15 +154,6 @@ vercel
 # Project Settings → Environment Variables → Add VITE_AGORA_APP_ID
 ```
 
-## Troubleshooting
-
-| Problem | Solution |
-|---------|----------|
-| Mic not working | Allow microphone permission in browser settings and reload |
-| "Agora App ID not set" | Make sure `.env` file exists with your `VITE_AGORA_APP_ID` |
-| Can't hear others | Click anywhere on the page first (browsers block autoplay audio) |
-| "CAN_NOT_GET_GATEWAY_SERVER" | Your Agora project has App Certificate enabled — disable it in Agora console |
-
 ## License
 
 MIT
