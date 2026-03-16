@@ -40,7 +40,21 @@ export function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center px-6 py-12 relative">
+
+      {/* Top-right Twitter pill */}
+      <a
+        href="https://x.com/Imvishp"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute top-5 right-5 flex items-center gap-1.5 bg-[#1c1c1e] rounded-full px-3 py-[6px] active:bg-[#2c2c2e] transition-colors fade-in"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#8e8e93">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+        </svg>
+        <span className="text-[#8e8e93] text-[12px] font-medium">@Imvishp</span>
+      </a>
+
       <div className="w-full max-w-[360px] space-y-8">
 
         {/* Logo & Title */}
@@ -129,6 +143,16 @@ export function Home() {
           </button>
         </div>
       </div>
+
+      {/* Footer credit */}
+      <a
+        href="https://x.com/Imvishp"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute bottom-6 text-[#38383a] text-[12px] hover:text-[#8e8e93] transition-colors fade-in fade-in-delay-5"
+      >
+        built by <span className="font-medium">@Imvishp</span>
+      </a>
     </div>
   )
 }
